@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>EditDecide Proposal</title>
+    <meta
+      name="description"
+      content="EditDecide proposal showcase: recasting instruction-based image editing as cost-sensitive decision-making."
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="EditDecide home">
+        <span class="brand-mark">ED</span>
+        <span>
+          <strong>EditDecide</strong>
+          <small>Proposal Brief</small>
+        </span>
+      </a>
+      <nav class="nav" aria-label="Primary navigation">
+        <a href="#scope">Scope</a>
+        <a href="#bench">Bench</a>
+        <a href="#method">Method</a>
+        <a href="#experiments">Experiments</a>
+        <a href="#timeline">Timeline</a>
+        <a href="#risks">Risks</a>
+      </nav>
+      <button class="menu-button" type="button" aria-label="Open navigation" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <img src="assets/editdecide-system-visual.png" alt="" class="hero-image" />
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+          <p class="kicker">ICLR 2027 target · compute freeze on August 15</p>
+          <h1 id="hero-title">EditDecide: image editing as a decision problem</h1>
+          <p class="hero-copy">
+            We reframe instruction-based image editing from pure generation into cost-sensitive
+            action selection under latent feasibility <strong>f</strong> and intent <strong>z</strong>.
+            A trustworthy editor should decide whether to edit, abstain, flag, ask, confirm, or
+            request a mask before producing a plausible but wrong image.
+          </p>
+          <div class="hero-actions" aria-label="Proposal highlights">
+            <a class="primary-link" href="#story">Read proposal</a>
+            <a class="secondary-link" href="#timeline">Execution plan</a>
+          </div>
+        </div>
+        <aside class="hero-panel" aria-label="Current project constraints">
+          <div>
+            <span class="metric">G1 + G2</span>
+            <small>Mainline scope</small>
+          </div>
+          <div>
+            <span class="metric">6 actions</span>
+            <small>Unified policy</small>
+          </div>
+          <div>
+            <span class="metric">8/15</span>
+            <small>GPU artifact freeze</small>
+          </div>
+        </aside>
+      </section>
+
+      <section class="section section-tight" id="story">
+        <div class="section-heading">
+          <p class="eyebrow">30-second read</p>
+          <h2>The exact proposal in one frame</h2>
+          <p>
+            Current editors execute instructions, but they rarely decide whether the request is
+            feasible, clear, safe, or likely to fail. EditDecide makes that decision explicit.
+          </p>
+        </div>
+
+        <div class="flow-grid" aria-label="EditDecide core formula">
+          <div class="flow-card">
+            <span class="flow-index">01</span>
+            <h3>Same image pool</h3>
+            <p>Shared bottom images support infeasible, feasible-twin, self-knowledge, and ambiguity tracks.</p>
+          </div>
+          <div class="flow-card">
+            <span class="flow-index">02</span>
+            <h3>Same JSON schema</h3>
+            <p>Every field must serve the correct decision, the reason, an experiment, or reproducibility.</p>
+          </div>
+          <div class="flow-card">
+            <span class="flow-index">03</span>
+            <h3>Different decision tracks</h3>
+            <p>S1, S1', S2, S3, S3', and human seed examples form one benchmark, not disconnected tasks.</p>
+          </div>
+          <div class="flow-card result">
+            <span class="flow-index">=</span>
+            <h3>One decision benchmark</h3>
+            <p>Evaluate whether systems should EDIT, FLAG, ABSTAIN, ASK, CONFIRM, or REQUEST_MASK.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section band" id="decision-space">
+        <div class="section-heading">
+          <p class="eyebrow">Unified action space</p>
+          <h2>The proposal is about deciding before editing</h2>
+        </div>
+        <div class="action-map">
+          <article>
+            <span>EDIT</span>
+            <p>Feasible, sufficiently clear, and expected risk is below the cost-sensitive threshold.</p>
+          </article>
+          <article>
+            <span>ABSTAIN</span>
+            <p>Information is unrecoverable or editor failure risk makes action worse than non-action.</p>
+          </article>
+          <article>
+            <span>FLAG</span>
+            <p>False premise, contradiction, missing executable context, or out-of-scope request.</p>
+          </article>
+          <article>
+            <span>ASK</span>
+            <p>Clarification has positive value after subtracting user cost.</p>
+          </article>
+          <article>
+            <span>CONFIRM</span>
+            <p>The likely intent is known but costly enough to require confirmation.</p>
+          </article>
+          <article>
+            <span>REQUEST_MASK</span>
+            <p>Language is inefficient and spatial input is the right disambiguation channel.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="scope">
+        <div class="section-heading">
+          <p class="eyebrow">Scope lock</p>
+          <h2>What stays in the ICLR version</h2>
+          <p>
+            The plan deliberately narrows the paper to the claims that can survive a 7-week GPU window.
+            G3 is kept only where it can be cached and analyzed offline.
+          </p>
+        </div>
+        <div class="scope-board">
+          <article class="scope-column must">
+            <h3>Must do</h3>
+            <ul>
+              <li>G1 feasibility and abstention with five infeasibility types.</li>
+              <li>Feasible twins and SHR-ORR Pareto to expose over-refusal.</li>
+              <li>G2 self-knowledge probe g(s), Brier score, and risk-coverage.</li>
+              <li>VOA Rerank, Oracle-VOA upper bound, joint vs two-stage.</li>
+              <li>EditDecide-Lite and shared vs decoupled probe ablation.</li>
+            </ul>
+          </article>
+          <article class="scope-column stretch">
+            <h3>Extension</h3>
+            <ul>
+              <li>G3 counterfactual twins and cached direct-edit outputs.</li>
+              <li>50% direct-edit ceiling for blind editing under hidden intents.</li>
+              <li>100-example human seed slice for ecological validity.</li>
+            </ul>
+          </article>
+          <article class="scope-column later">
+            <h3>Deferred</h3>
+            <ul>
+              <li>Full do-ask causal intervention with human-in-the-loop responses.</li>
+              <li>G4 multi-solution disagreement distribution.</li>
+              <li>Full cost-sensitive GRPO unless everything else is stable.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="section band" id="bench">
+        <div class="section-heading">
+          <p class="eyebrow">EditDecide-Bench</p>
+          <h2>Dataset layers, subsets, and why they exist</h2>
+        </div>
+        <div class="split-layout">
+          <div class="layers">
+            <div><strong>Layer 1</strong><span>Raw episode: image + user instruction</span></div>
+            <div><strong>Layer 2</strong><span>Decision annotation: feasibility, ambiguity, action, rationale</span></div>
+            <div><strong>Layer 3</strong><span>Twin structure: feasible and counterfactual intent twins</span></div>
+            <div><strong>Layer 4</strong><span>Editor behavior: outputs, refusal text, hidden states</span></div>
+            <div><strong>Layer 5</strong><span>Evaluation: judges, human labels, split IDs, cached paths</span></div>
+          </div>
+          <div class="subset-table" role="table" aria-label="Benchmark subsets">
+            <div class="table-row table-head" role="row">
+              <span>Subset</span><span>MPU size</span><span>Purpose</span>
+            </div>
+            <div class="table-row" role="row"><span>S1</span><span>600</span><span>Infeasible instructions for G1</span></div>
+            <div class="table-row" role="row"><span>S1'</span><span>600</span><span>Feasible twins to prevent refuse-everything systems</span></div>
+            <div class="table-row" role="row"><span>S2</span><span>1K</span><span>Self-knowledge labels and hidden-state probes</span></div>
+            <div class="table-row" role="row"><span>S3</span><span>1K</span><span>Ambiguous but feasible instructions</span></div>
+            <div class="table-row" role="row"><span>S3'</span><span>200 pairs</span><span>Counterfactual twins for offline clarification value</span></div>
+            <div class="table-row" role="row"><span>R</span><span>100</span><span>Human seed slice for realism checks</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="taxonomy">
+        <div class="section-heading">
+          <p class="eyebrow">Taxonomy</p>
+          <h2>Failure types the benchmark must separate</h2>
+        </div>
+        <div class="taxonomy-grid">
+          <article>
+            <h3>Five infeasibility types</h3>
+            <div class="pill-list">
+              <span>false_premise</span>
+              <span>impossible</span>
+              <span>contradictory</span>
+              <span>ill_posed</span>
+              <span>out_of_scope_or_unsafe</span>
+            </div>
+            <p>
+              These support silent hallucination measurement, over-refusal controls, reviewer defense,
+              and pixel-grounded feasibility rather than text-only abstention.
+            </p>
+          </article>
+          <article>
+            <h3>Seven ambiguity types</h3>
+            <div class="pill-list">
+              <span>target</span>
+              <span>operation</span>
+              <span>region</span>
+              <span>degree</span>
+              <span>style</span>
+              <span>preservation</span>
+              <span>interaction</span>
+            </div>
+            <p>
+              These keep clarification in the unified schema while limiting main-paper scope to cached
+              counterfactual twin evaluation.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section band" id="schema">
+        <div class="section-heading">
+          <p class="eyebrow">Schema rationale</p>
+          <h2>JSON fields map directly to claims and figures</h2>
+          <p>
+            The schema is intentionally broad because it is the join key across data construction,
+            editor behavior, probes, judges, VOA decisions, and post-freeze reproducibility.
+          </p>
+        </div>
+        <div class="schema-layout">
+          <pre><code>{
+  "sample_id": "ed_s1_000001",
+  "tracks": { "primary": "feasibility" },
+  "image": {},
+  "instruction": {},
+  "decision_labels": {},
+  "feasibility": {},
+  "ambiguity": {},
+  "intent_graph": {},
+  "twins": {},
+  "editor_runs": [],
+  "self_knowledge": {},
+  "judge_outputs": {},
+  "voa": {},
+  "cache": {},
+  "provenance": {}
+}</code></pre>
+          <div class="schema-notes">
+            <article><strong>Correct decision</strong><span>decision_labels, feasibility, ambiguity, intent_graph</span></article>
+            <article><strong>Why it is correct</strong><span>evidence, gold_reason, rationale type, human annotations</span></article>
+            <article><strong>Which experiment needs it</strong><span>tracks, rq_tags, paper_use, editor_runs, self_knowledge</span></article>
+            <article><strong>Can it be reproduced</strong><span>dataset_version, split, cache paths, provenance, pinned judge outputs</span></article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="method">
+        <div class="section-heading">
+          <p class="eyebrow">Method stack</p>
+          <h2>One decision kernel, one shared self-knowledge signal</h2>
+        </div>
+        <div class="method-pipeline" aria-label="EditDecide method pipeline">
+          <div><span>Input</span><strong>I + u</strong><small>image and instruction</small></div>
+          <div><span>Perceive</span><strong>Intent-feasibility graph</strong><small>belief b_t(f, z)</small></div>
+          <div><span>Signal</span><strong>Probe g(s)</strong><small>failure prior and calibration target</small></div>
+          <div><span>Decide</span><strong>argmax VOA(a; b_t)</strong><small>six action policy</small></div>
+        </div>
+        <div class="method-levels">
+          <article><span>Level 0</span><strong>Always-Edit / Always-Abstain / Generic-Ask</strong><p>Task difficulty anchors.</p></article>
+          <article><span>Level 1</span><strong>EditDecide-Lite</strong><p>Graph-SFT + DPO, single forward pass.</p></article>
+          <article><span>Level 2</span><strong>VOA Rerank</strong><p>Main method: explicit cost-sensitive decision selection.</p></article>
+          <article><span>Level 3</span><strong>Oracle-VOA</strong><p>Diagnostic upper bound using true edit outcomes.</p></article>
+          <article><span>Level 4</span><strong>Should-Edit gates and probe heads</strong><p>G1/G2 capability diagnosis.</p></article>
+        </div>
+      </section>
+
+      <section class="section band" id="experiments">
+        <div class="section-heading">
+          <p class="eyebrow">Must-win evidence</p>
+          <h2>The figures that defend the unified claim</h2>
+        </div>
+        <div class="evidence-grid">
+          <article class="evidence-card priority">
+            <span>Fig. 5</span>
+            <h3>joint VOA vs two-stage</h3>
+            <p>Tests whether unified decision-making beats filter-then-ask on net utility.</p>
+          </article>
+          <article class="evidence-card">
+            <span>Fig. 3</span>
+            <h3>SHR-ORR Pareto</h3>
+            <p>Shows silent hallucination reduction without hiding over-refusal cost.</p>
+          </article>
+          <article class="evidence-card">
+            <span>Fig. 4</span>
+            <h3>Risk-coverage</h3>
+            <p>Tests whether pre-generation self-knowledge reduces residual failure risk.</p>
+          </article>
+          <article class="evidence-card">
+            <span>Table 2</span>
+            <h3>shared vs decoupled probe</h3>
+            <p>Defends that g(s) is a real bridge between abstention and clarification.</p>
+          </article>
+          <article class="evidence-card">
+            <span>Fig. 6</span>
+            <h3>Twin Success ceiling</h3>
+            <p>Shows blind direct editing cannot satisfy both hidden intents in counterfactual twins.</p>
+          </article>
+          <article class="evidence-card">
+            <span>Table 1</span>
+            <h3>cross-editor results</h3>
+            <p>Reports SHR, ORR, risk-coverage AUC, net utility, and twin success.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="timeline">
+        <div class="section-heading">
+          <p class="eyebrow">Compute-constrained plan</p>
+          <h2>Everything GPU-dependent must be cached before August 15</h2>
+        </div>
+        <div class="timeline-tabs" role="tablist" aria-label="Timeline phases">
+          <button class="tab active" type="button" data-tab="phase-a" role="tab" aria-selected="true">Phase A</button>
+          <button class="tab" type="button" data-tab="phase-b" role="tab" aria-selected="false">Phase B</button>
+          <button class="tab" type="button" data-tab="checkpoints" role="tab" aria-selected="false">Go / No-Go</button>
+        </div>
+        <div class="tab-panel active" id="phase-a" role="tabpanel">
+          <div class="timeline">
+            <article><span>W1</span><p>Lock scope, schema, VOA, action space, citation corrections, and 20-30 high-quality examples.</p></article>
+            <article><span>W2-3</span><p>Build S1/S1'/S2/S3/S3' and R; run judge-human agreement and distribution checks.</p></article>
+            <article><span>W4</span><p>Train EditDecide-Lite; cache all editor outputs; produce initial SHR-ORR Pareto.</p></article>
+            <article><span>W5</span><p>Collect hidden states, train probe, report Brier and risk-coverage; calibrate surrogate.</p></article>
+            <article><span>W6-7</span><p>Run VOA Rerank, Oracle-VOA, joint-vs-two-stage, shared-vs-decoupled, and twin outputs.</p></article>
+            <article><span>8/15</span><p>Freeze C1-C9 and verify every paper figure can be redrawn from cache without GPU.</p></article>
+          </div>
+        </div>
+        <div class="tab-panel" id="phase-b" role="tabpanel">
+          <div class="timeline">
+            <article><span>8/15-8/22</span><p>Human-evaluation correlation, calibration finalization, and failure taxonomy.</p></article>
+            <article><span>8/22-9/5</span><p>Counterfactual twin analysis, ablation write-up, and related-work comparison.</p></article>
+            <article><span>9/5-9/18</span><p>Draft 9-page main paper, appendix, rebuttal bank, significance tests, and final figures.</p></article>
+            <article><span>9/18-deadline</span><p>Internal review, page compression, OpenReview submission, and release preparation.</p></article>
+          </div>
+        </div>
+        <div class="tab-panel" id="checkpoints" role="tabpanel">
+          <div class="checkpoint-grid">
+            <article><strong>W3</strong><span>Benchmark quality and judge kappa stable; otherwise shrink to G1 benchmark paper.</span></article>
+            <article><strong>W4</strong><span>SOTA editors show meaningful SHR; otherwise move mainline toward G2.</span></article>
+            <article><strong>W5</strong><span>Risk-coverage beats random, surrogate rho reaches target, C2-C4 run end-to-end.</span></article>
+            <article><strong>W7</strong><span>VOA Rerank beats generic baselines and joint beats two-stage.</span></article>
+            <article><strong>Mid-Sep</strong><span>Nine-page paper is focused and statistically defensible.</span></article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section band" id="deliverables">
+        <div class="section-heading">
+          <p class="eyebrow">Deliverables</p>
+          <h2>What the project should release</h2>
+        </div>
+        <div class="deliverable-grid">
+          <article><strong>EditDecide-Bench</strong><span>Dataset, data card, schema, splits, and human seed slice.</span></article>
+          <article><strong>Evaluation harness</strong><span>run_eval.py, pinned VLM judge, public prompts, and significance tests.</span></article>
+          <article><strong>Checkpoints</strong><span>Probe, surrogate, Lite, Rerank, and model cards or hosted weights.</span></article>
+          <article><strong>Leaderboard</strong><span>SHR-ORR, calibration, net utility, and twin-success results.</span></article>
+          <article><strong>Interactive demo</strong><span>Image + instruction in, six-state decision and reason out.</span></article>
+          <article><strong>figures.ipynb</strong><span>Offline redraw from frozen caches for rebuttal and reproducibility.</span></article>
+        </div>
+      </section>
+
+      <section class="section" id="risks">
+        <div class="section-heading">
+          <p class="eyebrow">Reviewer defense</p>
+          <h2>Known attacks and planned evidence</h2>
+        </div>
+        <div class="risk-list">
+          <article>
+            <h3>"This is AbstentionBench for pixels."</h3>
+            <p>Defense: pixel-grounded feasibility, feasible twins, over-refusal metrics, and editor-output evaluation.</p>
+          </article>
+          <article>
+            <h3>"The unified story is decorative."</h3>
+            <p>Defense: joint-VOA vs two-stage and shared-vs-decoupled probe are main-paper ablations.</p>
+          </article>
+          <article>
+            <h3>"Synthetic data is unrealistic."</h3>
+            <p>Defense: 100-150 human seed examples, independent labels, Cohen's kappa, and distribution tests.</p>
+          </article>
+          <article>
+            <h3>"VLM judges drift or are unreliable."</h3>
+            <p>Defense: pinned judge version, public prompt, judge-human agreement, and multiple-judge sensitivity.</p>
+          </article>
+          <article>
+            <h3>"Self-knowledge cannot be tested on API editors."</h3>
+            <p>Defense: explicitly split black-box G1/G4 editors from open-weight G2/probe editors.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section final-band">
+        <div class="final-copy">
+          <p class="eyebrow">Positioning</p>
+          <h2>The paper should claim editing-specific instantiation, not new decision theory</h2>
+          <p>
+            VOA, reject options, and clarification value are known ideas. EditDecide's defensible novelty is
+            the instruction-based image editing instantiation: pixel-grounded feasibility, feasible-twin
+            controls, editor self-knowledge, and a single schema that tests joint action selection.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>Built from: EditDecide specs.md and EditDecide v1.1研究执行规划.md</span>
+      <a href="#top">Back to top</a>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
