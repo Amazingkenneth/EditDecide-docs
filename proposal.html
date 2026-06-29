@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Proposal · EditDecide</title>
+    <meta name="description" content="EditDecide project proposal and research framing." />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="index.html"><span class="brand-mark">ED</span><span><strong>EditDecide</strong><small>Project docs</small></span></a>
+      <button class="menu-button" type="button" aria-label="Toggle navigation" aria-expanded="false"><span></span><span></span><span></span></button>
+      <nav class="site-nav" aria-label="Primary navigation">
+        <a href="index.html">Overview</a><a class="active" href="proposal.html">Proposal</a><a href="benchmark.html">Benchmark</a><a href="schema.html">Schema</a><a href="method.html">Method</a><a href="execution.html">Execution</a>
+      </nav>
+    </header>
+    <main class="doc-layout">
+      <aside class="toc">
+        <a href="#motivation">Motivation</a>
+        <a href="#questions">Research Questions</a>
+        <a href="#scope">Scope Lock</a>
+        <a href="#paper">Paper Shape</a>
+        <a href="#claims">Claims</a>
+        <a href="#defense">Reviewer Defense</a>
+      </aside>
+      <article class="doc">
+        <p class="eyebrow">Proposal</p>
+        <h1>Project framing and paper proposal</h1>
+        <p class="lead">
+          EditDecide reframes instruction-guided image editing from a pure generation problem into
+          a cost-sensitive decision problem under latent feasibility <code>f</code> and intent
+          <code>z</code>. The editor should decide whether it should act before producing an image.
+        </p>
+
+        <section id="motivation">
+          <h2>Motivation</h2>
+          <p>Current instruction-based editors typically assume that the user request is executable, the intent is clear, and the correct edit is unique. In real use these assumptions fail systematically.</p>
+          <div class="matrix">
+            <div class="row head"><span>Gap</span><span>Failed assumption</span><span>Bad behavior</span><span>Expected behavior</span></div>
+            <div class="row"><span>G1 feasibility</span><span>The request is executable</span><span>Silently edits an impossible or false-premise instruction</span><span>ABSTAIN, FLAG, or explain</span></div>
+            <div class="row"><span>G2 self-knowledge</span><span>The editor can safely attempt the edit</span><span>Commits despite knowing signals of likely failure</span><span>Calibrated failure confidence and selective editing</span></div>
+            <div class="row"><span>G3 clarification</span><span>User intent is clear</span><span>Blindly guesses the target, operation, degree, or region</span><span>ASK, CONFIRM, or REQUEST_MASK</span></div>
+            <div class="row"><span>G4 disagreement</span><span>There is only one correct output</span><span>Collapses legal alternatives into one mode</span><span>Evaluate valid edit distributions</span></div>
+          </div>
+          <p>The unified insight is that G1-G4 are different regions of the same belief-space decision problem. When feasibility is unlikely, refuse or flag. When feasibility is high but intent is uncertain, ask or request spatial input. When risk is low, edit.</p>
+        </section>
+
+        <section id="questions">
+          <h2>Research Questions</h2>
+          <ul class="rich-list">
+            <li><strong>RQ-G1:</strong> Can editors correctly reject infeasible, contradictory, false-premise, ill-posed, or unsafe edits without over-refusing feasible twins?</li>
+            <li><strong>RQ-G2:</strong> Can editor failure be predicted from internal or pre-generation signals, and does a calibrated probe improve risk-coverage?</li>
+            <li><strong>RQ-G3:</strong> Does clarification reduce edit risk after subtracting user cost, and when is a mask better than language?</li>
+            <li><strong>RQ-G4:</strong> Do editors collapse valid multi-solution requests, and can distributional scoring better match human acceptability?</li>
+            <li><strong>RQ-Unified:</strong> Does a joint value-of-action policy beat a two-stage filter-then-ask pipeline?</li>
+          </ul>
+        </section>
+
+        <section id="scope">
+          <h2>Scope Lock</h2>
+          <div class="three-col">
+            <article class="status must"><h3>Mainline</h3><p>G1 feasibility and G2 self-knowledge are the paper backbone. Required evidence includes SHR-ORR Pareto, feasible twins, risk-coverage, Brier score, VOA Rerank, Oracle-VOA, joint vs two-stage, shared vs decoupled probe, and EditDecide-Lite.</p></article>
+            <article class="status stretch"><h3>Extension</h3><p>G3 remains as a cacheable extension through counterfactual twins, direct-edit ceiling, and a small human seed slice. Full live do-ask intervention is not part of the mainline.</p></article>
+            <article class="status later"><h3>Deferred</h3><p>G4 disagreement distribution, full multi-step human-in-loop clarification, and cost-sensitive GRPO are future work unless the mainline stabilizes early.</p></article>
+          </div>
+        </section>
+
+        <section id="paper">
+          <h2>Final Paper Shape</h2>
+          <div class="matrix compact">
+            <div class="row head"><span>Section</span><span>Budget</span><span>Content</span></div>
+            <div class="row"><span>Introduction</span><span>1.5 pages</span><span>Concrete failure example, gap, contributions.</span></div>
+            <div class="row"><span>Related Work</span><span>1.0 page</span><span>Editing/eval, agents, abstention, clarification, probes, disagreement.</span></div>
+            <div class="row"><span>Formulation</span><span>1.2 pages</span><span>Belief over <code>f,z</code>, action space, VOA, VOI and abstention as special cases.</span></div>
+            <div class="row"><span>Method</span><span>1.8 pages</span><span>Decision kernel, shared probe, Lite/Rerank/Oracle hierarchy.</span></div>
+            <div class="row"><span>Benchmark</span><span>0.8 pages</span><span>Shared schema, subsets, twins, pinned judge, human seed slice.</span></div>
+            <div class="row"><span>Experiments</span><span>2.2 pages</span><span>Four figures, two tables, ablations, human validation.</span></div>
+          </div>
+        </section>
+
+        <section id="claims">
+          <h2>Contribution Claims</h2>
+          <ol class="rich-list">
+            <li>Reframe instruction-based image editing as cost-sensitive decision-making under latent feasibility and intent.</li>
+            <li>Introduce EditDecide-Bench, a shared image-pool and schema benchmark for abstention, self-knowledge, and clarification evaluation.</li>
+            <li>Propose EditDecide: an intent-feasibility graph plus shared self-knowledge probe <code>g(s)</code> that drives abstention and serves as a VOI risk surrogate.</li>
+            <li>Show improvements in silent hallucination, over-refusal trade-off, risk-coverage, net utility, and joint decision-making over two-stage baselines.</li>
+          </ol>
+          <p>Claims should be domain-limited. The project should not claim new decision theory; the defensible novelty is the image-editing instantiation, pixel-grounded feasibility, feasible twins, self-knowledge calibration, and unified evaluation.</p>
+        </section>
+
+        <section id="defense">
+          <h2>Reviewer Defense</h2>
+          <div class="matrix">
+            <div class="row head"><span>Likely attack</span><span>Planned evidence</span><span>Dependency</span></div>
+            <div class="row"><span>AbstentionBench for pixels</span><span>Pixel-grounded feasibility, feasible twins, over-refusal metrics, editor-output evaluation.</span><span>GPU outputs</span></div>
+            <div class="row"><span>Unified story is decorative</span><span>Joint-VOA vs two-stage and shared-vs-decoupled probe ablations.</span><span>Critical</span></div>
+            <div class="row"><span>Synthetic data is unrealistic</span><span>100-150 human seed examples, independent labels, kappa, distribution tests.</span><span>Mostly offline</span></div>
+            <div class="row"><span>VLM judge drift</span><span>Pinned judge version, public prompt, judge-human agreement, multiple-judge sensitivity.</span><span>Offline</span></div>
+            <div class="row"><span>Probe cannot apply to API editors</span><span>Explicit split: black-box G1 for APIs, G2 probe only for open-weight editors.</span><span>Design constraint</span></div>
+          </div>
+        </section>
+      </article>
+    </main>
+    <footer class="site-footer"><a href="index.html">Overview</a><a href="benchmark.html">Next: benchmark</a></footer>
+    <script src="script.js"></script>
+  </body>
+</html>

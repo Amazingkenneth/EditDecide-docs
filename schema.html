@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Schema · EditDecide</title>
+    <meta name="description" content="EditDecide JSON schema and field rationale." />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="index.html"><span class="brand-mark">ED</span><span><strong>EditDecide</strong><small>Project docs</small></span></a>
+      <button class="menu-button" type="button" aria-label="Toggle navigation" aria-expanded="false"><span></span><span></span><span></span></button>
+      <nav class="site-nav" aria-label="Primary navigation">
+        <a href="index.html">Overview</a><a href="proposal.html">Proposal</a><a href="benchmark.html">Benchmark</a><a class="active" href="schema.html">Schema</a><a href="method.html">Method</a><a href="execution.html">Execution</a>
+      </nav>
+    </header>
+    <main class="doc-layout">
+      <aside class="toc">
+        <a href="#principle">Principle</a><a href="#object">Top-Level Object</a><a href="#image">Image</a><a href="#instruction">Instruction</a><a href="#tracks">Tracks</a><a href="#decision">Decision Labels</a><a href="#feasibility">Feasibility</a><a href="#values">Enums</a>
+      </aside>
+      <article class="doc">
+        <p class="eyebrow">JSON Specification</p>
+        <h1>Schema and field rationale</h1>
+        <p class="lead">The schema is broad because it is the join key across data construction, editor behavior, self-knowledge probes, judges, VOA decisions, and reproducibility after the compute freeze.</p>
+
+        <section id="principle">
+          <h2>Design Principle</h2>
+          <p>Every JSON field must answer at least one of four questions: what is the correct decision, why is it correct, which experiment or metric needs it, and can the result be reproduced after August 15?</p>
+          <div class="formula-grid">
+            <article><strong>Correct decision</strong><p><code>decision_labels</code>, <code>feasibility</code>, <code>ambiguity</code>, and <code>intent_graph</code>.</p></article>
+            <article><strong>Reason</strong><p>Evidence, gold reason, rationale type, and human annotations.</p></article>
+            <article><strong>Experiment</strong><p><code>tracks</code>, <code>rq_tags</code>, <code>paper_use</code>, <code>editor_runs</code>, and <code>self_knowledge</code>.</p></article>
+            <article><strong>Reproducibility</strong><p>Dataset version, split, cache paths, provenance, pinned judge outputs.</p></article>
+          </div>
+        </section>
+
+        <section id="object">
+          <h2>Top-Level Object</h2>
+          <pre><code>{
+  "sample_id": "ed_s1_000001",
+  "dataset_version": "v0.1",
+  "split": "mpu_test",
+  "tracks": {
+    "primary": "feasibility",
+    "secondary": ["self_knowledge"]
+  },
+  "image": {},
+  "instruction": {},
+  "context": {},
+  "decision_labels": {},
+  "feasibility": {},
+  "ambiguity": {},
+  "intent_graph": {},
+  "twins": {},
+  "editor_runs": [],
+  "self_knowledge": {},
+  "judge_outputs": {},
+  "human_annotations": {},
+  "voa": {},
+  "cache": {},
+  "provenance": {}
+}</code></pre>
+          <div class="matrix compact">
+            <div class="row head"><span>Field</span><span>Purpose</span></div>
+            <div class="row"><span><code>sample_id</code></span><span>Stable join key across outputs, hidden states, decisions, judges, and figures.</span></div>
+            <div class="row"><span><code>dataset_version</code></span><span>Prevents metric drift across dataset releases.</span></div>
+            <div class="row"><span><code>split</code></span><span>Prevents leakage and supports reproducible train/dev/test evaluation.</span></div>
+            <div class="row"><span><code>twins</code></span><span>Links feasible twins and counterfactual twins for SHR-ORR and twin-success experiments.</span></div>
+            <div class="row"><span><code>cache</code></span><span>Stores paths for images, outputs, hidden states, predictions, and frozen artifacts.</span></div>
+          </div>
+        </section>
+
+        <section id="image">
+          <h2>Image Block</h2>
+          <pre><code>{
+  "image": {
+    "image_id": "img_0421",
+    "path": "images/img_0421.jpg",
+    "source": "open_dataset",
+    "source_dataset": "COCO",
+    "license": "cc-by",
+    "width": 1024,
+    "height": 1024,
+    "modality": "photo",
+    "visual_inventory": [
+      {
+        "object_id": "obj_01",
+        "category": "cup",
+        "attributes": {
+          "color": "white",
+          "position": "left foreground"
+        },
+        "bbox": [120, 400, 260, 720],
+        "mask_path": null,
+        "confidence": 0.91
+      }
+    ],
+    "quality_flags": {
+      "low_resolution": false,
+      "blurred": false,
+      "occluded_target": true,
+      "contains_text": false,
+      "contains_face": true
+    }
+  }
+}</code></pre>
+          <p>The image block makes feasibility visually grounded rather than merely linguistic. <code>visual_inventory</code> supports false-premise checks, target ambiguity, mask requests, and grounding evidence.</p>
+        </section>
+
+        <section id="instruction">
+          <h2>Instruction Block</h2>
+          <pre><code>{
+  "instruction": {
+    "raw": "Change the red sports car to blue.",
+    "language": "en",
+    "normalized": "change red sports car to blue",
+    "parsed": {
+      "target_phrase": "red sports car",
+      "operation": "change_color",
+      "attribute_change": {
+        "attribute": "color",
+        "from": "red",
+        "to": "blue"
+      },
+      "region_phrase": null,
+      "degree": null,
+      "style_reference": null,
+      "preservation_constraints": []
+    }
+  }
+}</code></pre>
+          <p>This block separates the user's literal request from the system's structured interpretation. That separation is required for detecting false premises, ambiguity, and hallucinated edits.</p>
+        </section>
+
+        <section id="tracks">
+          <h2>Track Block</h2>
+          <pre><code>{
+  "tracks": {
+    "primary": "feasibility",
+    "secondary": ["self_knowledge"],
+    "rq_tags": ["G1", "G2"],
+    "paper_use": ["Fig3_SHR_ORR", "Fig4_RiskCoverage", "Table1_Main"]
+  }
+}</code></pre>
+          <p>Recommended <code>primary</code> values are <code>feasibility</code>, <code>feasible_twin</code>, <code>self_knowledge</code>, <code>ambiguity</code>, <code>counterfactual_twin</code>, and <code>human_seed</code>.</p>
+        </section>
+
+        <section id="decision">
+          <h2>Decision Labels Block</h2>
+          <pre><code>{
+  "decision_labels": {
+    "gold_action": "FLAG",
+    "acceptable_actions": ["FLAG", "ABSTAIN"],
+    "unacceptable_actions": ["EDIT"],
+    "gold_reason": "No red sports car is visible in the image.",
+    "decision_rationale_type": "visual_false_premise",
+    "requires_user_input": false,
+    "requires_mask": false
+  }
+}</code></pre>
+          <p>The action space includes six actions, not only edit or refuse. This block defines what counts as correct, defensible, or clearly wrong under the benchmark cost model.</p>
+        </section>
+
+        <section id="feasibility">
+          <h2>Feasibility Block</h2>
+          <pre><code>{
+  "feasibility": {
+    "label": "infeasible",
+    "infeasible_type": "false_premise",
+    "confidence": 1.0,
+    "evidence": [
+      {
+        "evidence_id": "ev_001",
+        "type": "object_absence",
+        "text": "No vehicle is visible in the image.",
+        "grounding": {
+          "object_id": null,
+          "bbox": null,
+          "image_region": "entire_image"
+        }
+      }
+    ],
+    "minimal_fix": {
+      "fix_type": "add_missing_object",
+      "description": "Use an image containing a red sports car."
+    }
+  }
+}</code></pre>
+          <p>The feasibility block is the core G1 annotation. It provides the infeasibility label, evidence, visual grounding, and minimal repair needed to construct a feasible twin.</p>
+        </section>
+
+        <section id="values">
+          <h2>Key Enum Values</h2>
+          <div class="matrix compact">
+            <div class="row head"><span>Enum</span><span>Values</span></div>
+            <div class="row"><span>Actions</span><span><code>EDIT</code>, <code>ABSTAIN</code>, <code>FLAG</code>, <code>ASK</code>, <code>CONFIRM</code>, <code>REQUEST_MASK</code></span></div>
+            <div class="row"><span>Infeasibility</span><span><code>false_premise</code>, <code>impossible</code>, <code>contradictory</code>, <code>ill_posed</code>, <code>out_of_scope_or_unsafe</code></span></div>
+            <div class="row"><span>Ambiguity</span><span><code>target</code>, <code>operation</code>, <code>region</code>, <code>degree</code>, <code>style</code>, <code>preservation</code>, <code>interaction</code></span></div>
+            <div class="row"><span>Twin type</span><span><code>image_minimal_change</code>, <code>instruction_minimal_change</code>, <code>both_minimal_change</code>, <code>counterfactual_intent</code></span></div>
+          </div>
+        </section>
+      </article>
+    </main>
+    <footer class="site-footer"><a href="benchmark.html">Previous: benchmark</a><a href="method.html">Next: method</a></footer>
+    <script src="script.js"></script>
+  </body>
+</html>

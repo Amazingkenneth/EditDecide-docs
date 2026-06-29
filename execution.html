@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Execution · EditDecide</title>
+    <meta name="description" content="EditDecide execution plan, artifact freeze, timeline, and deliverables." />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="index.html"><span class="brand-mark">ED</span><span><strong>EditDecide</strong><small>Project docs</small></span></a>
+      <button class="menu-button" type="button" aria-label="Toggle navigation" aria-expanded="false"><span></span><span></span><span></span></button>
+      <nav class="site-nav" aria-label="Primary navigation">
+        <a href="index.html">Overview</a><a href="proposal.html">Proposal</a><a href="benchmark.html">Benchmark</a><a href="schema.html">Schema</a><a href="method.html">Method</a><a class="active" href="execution.html">Execution</a>
+      </nav>
+    </header>
+    <main class="doc-layout">
+      <aside class="toc">
+        <a href="#freeze">Freeze Artifacts</a><a href="#timeline">Timeline</a><a href="#triggers">Go/No-Go</a><a href="#deliverables">Release Package</a><a href="#owners">Owners</a>
+      </aside>
+      <article class="doc">
+        <p class="eyebrow">Execution plan</p>
+        <h1>Compute-constrained plan and release artifacts</h1>
+        <p class="lead">The hard operational constraint is that all GPU-dependent experiments must be run and cached before August 15. After that date, work should be limited to writing, human validation, offline analysis, and figure regeneration from frozen caches.</p>
+
+        <section id="freeze">
+          <h2>Artifacts to Freeze Before August 15</h2>
+          <div class="matrix">
+            <div class="row head"><span>ID</span><span>Artifact</span><span>Why it is required</span><span>Suggested format</span></div>
+            <div class="row"><span>C1</span><span>All editor outputs</span><span>Raw material for G1, G3, and black-box behavior evaluation.</span><span><code>outputs/{editor}/{sample_id}.png</code> + jsonl</span></div>
+            <div class="row"><span>C2</span><span>Open-editor hidden states</span><span>Inputs for self-knowledge probes.</span><span><code>hidden_states/{editor}/{layer}/{sample_id}.npz</code></span></div>
+            <div class="row"><span>C3</span><span>Self-knowledge failure labels</span><span>Ground truth for Brier score and risk-coverage.</span><span><code>labels/self_knowledge.jsonl</code></span></div>
+            <div class="row"><span>C4</span><span>Probe checkpoints and predictions</span><span>Needed for calibration, reliability, and cross-editor transfer.</span><span><code>ckpt/probe_*.pt</code>, <code>preds/*.parquet</code></span></div>
+            <div class="row"><span>C5</span><span>Edit-risk surrogate</span><span>Calibrates expected edit failure and supports VOA rerank.</span><span><code>ckpt/surrogate_*.pt</code>, <code>calib/*.csv</code></span></div>
+            <div class="row"><span>C6</span><span>VOA Rerank and Oracle-VOA logs</span><span>Main method and diagnostic upper bound.</span><span><code>decisions/{method}/*.jsonl</code></span></div>
+            <div class="row"><span>C7</span><span>Ablation decision logs</span><span>Joint-vs-two-stage and shared-vs-decoupled evidence.</span><span><code>ablation/*.jsonl</code></span></div>
+            <div class="row"><span>C8</span><span>Counterfactual twin edit outputs</span><span>G3 50% direct-edit ceiling and offline clarification analysis.</span><span><code>outputs/twin/*</code></span></div>
+            <div class="row"><span>C9</span><span>EditDecide-Lite checkpoint</span><span>Minimum viable learned policy.</span><span><code>ckpt/lite_*.pt</code></span></div>
+          </div>
+        </section>
+
+        <section id="timeline">
+          <h2>Two-Phase Timeline</h2>
+          <h3>Phase A: now to August 15</h3>
+          <div class="timeline">
+            <article><span>W1</span><p>Lock scope, schema, five infeasibility types, seven ambiguity types, VOA formulation, cost model, and 20-30 high-quality examples.</p></article>
+            <article><span>W2-W3</span><p>Build S1, S1', S2, S3, S3', and R. Run initial judge-human agreement and distribution checks.</p></article>
+            <article><span>W4</span><p>Train EditDecide-Lite, cache all editor outputs, and produce the first SHR-ORR Pareto.</p></article>
+            <article><span>W5</span><p>Collect hidden states, train self-knowledge probes, report Brier and risk-coverage, and calibrate the surrogate.</p></article>
+            <article><span>W6-W7</span><p>Run VOA Rerank, Oracle-VOA, joint-vs-two-stage, shared-vs-decoupled, baseline comparisons, and twin outputs.</p></article>
+            <article><span>8/15</span><p>Freeze C1-C9 and verify every figure can be regenerated without GPU.</p></article>
+          </div>
+          <h3>Phase B: August 15 to late September</h3>
+          <div class="timeline">
+            <article><span>8/15-8/22</span><p>Human evaluation correlation, final calibration, and failure taxonomy.</p></article>
+            <article><span>8/22-9/5</span><p>Counterfactual twin analysis, ablation write-up, and related-work comparison.</p></article>
+            <article><span>9/5-9/18</span><p>Draft the 9-page main paper, appendix, rebuttal bank, significance tests, and final figures.</p></article>
+            <article><span>9/18-deadline</span><p>Internal review, compression, OpenReview submission, and release preparation.</p></article>
+          </div>
+        </section>
+
+        <section id="triggers">
+          <h2>Go/No-Go Triggers</h2>
+          <div class="matrix compact">
+            <div class="row head"><span>Checkpoint</span><span>Must be true</span><span>Fallback</span></div>
+            <div class="row"><span>W3</span><span>Benchmark quality and judge kappa are stable.</span><span>Shrink to G1 single-track benchmark paper.</span></div>
+            <div class="row"><span>W4</span><span>SOTA editors have meaningfully high silent hallucination rates.</span><span>Move G1 to analysis and shift mainline to G2.</span></div>
+            <div class="row"><span>W5</span><span>Risk-coverage beats random and C2-C4 run end-to-end.</span><span>Limit G2 to single-editor probe or appendix.</span></div>
+            <div class="row"><span>W7</span><span>VOA Rerank beats generic baselines and joint beats two-stage.</span><span>Reframe as complementary evaluations plus shared signal.</span></div>
+            <div class="row"><span>Mid-Sep</span><span>Paper is focused, statistically defensible, and complete.</span><span>Downgrade to workshop or benchmark-only release.</span></div>
+          </div>
+        </section>
+
+        <section id="deliverables">
+          <h2>Release Package</h2>
+          <pre><code>editdecide/
+├── README.md
+├── data/
+│   ├── DATACARD.md
+│   ├── editdecide_bench.jsonl
+│   ├── schema.json
+│   └── splits/
+├── eval/
+│   ├── run_eval.py
+│   ├── metrics/
+│   ├── judge/
+│   └── stats/
+├── method/
+│   ├── perceive/
+│   ├── probe/
+│   ├── surrogate/
+│   ├── policy/
+│   └── user_sim/
+├── ckpt/
+├── leaderboard/
+├── demo/
+├── repro/
+│   ├── MODELCARD_probe.md
+│   ├── cached_outputs/
+│   └── figures.ipynb
+├── paper/
+└── LICENSE</code></pre>
+          <p>The release should prioritize EditDecide-Bench, a pinned evaluation harness, public judge prompts, probe and rerank checkpoints, leaderboard metrics, the interactive demo, and an offline figure notebook.</p>
+        </section>
+
+        <section id="owners">
+          <h2>Suggested Owners</h2>
+          <div class="three-col">
+            <article><h3>Student A</h3><p>VOA policy, Rerank, Oracle-VOA, joint-vs-two-stage, and EditDecide-Lite.</p></article>
+            <article><h3>Student B</h3><p>Benchmark construction, twins, judge, self-knowledge probe, surrogate, human validation.</p></article>
+            <article><h3>Advisor</h3><p>Weekly go/no-go review, claim discipline, citation accuracy, budget, GPU, and annotation coordination.</p></article>
+          </div>
+        </section>
+      </article>
+    </main>
+    <footer class="site-footer"><a href="method.html">Previous: method</a><a href="index.html">Back to overview</a></footer>
+    <script src="script.js"></script>
+  </body>
+</html>

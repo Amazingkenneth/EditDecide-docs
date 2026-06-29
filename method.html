@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Method · EditDecide</title>
+    <meta name="description" content="EditDecide method stack, experiments, baselines, and metrics." />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="index.html"><span class="brand-mark">ED</span><span><strong>EditDecide</strong><small>Project docs</small></span></a>
+      <button class="menu-button" type="button" aria-label="Toggle navigation" aria-expanded="false"><span></span><span></span><span></span></button>
+      <nav class="site-nav" aria-label="Primary navigation">
+        <a href="index.html">Overview</a><a href="proposal.html">Proposal</a><a href="benchmark.html">Benchmark</a><a href="schema.html">Schema</a><a class="active" href="method.html">Method</a><a href="execution.html">Execution</a>
+      </nav>
+    </header>
+    <main class="doc-layout">
+      <aside class="toc">
+        <a href="#architecture">Architecture</a><a href="#levels">Method Levels</a><a href="#editors">Editor Split</a><a href="#metrics">Metrics</a><a href="#experiments">Experiments</a><a href="#baselines">Baselines</a>
+      </aside>
+      <article class="doc">
+        <p class="eyebrow">Method and experiments</p>
+        <h1>Decision kernel, probe, VOA policy, and evidence plan</h1>
+        <p class="lead">The method is deliberately scoped as one decision kernel, one shared self-knowledge signal, and two auxiliaries: an edit-risk surrogate and a training-time user simulator.</p>
+
+        <section id="architecture">
+          <h2>Architecture</h2>
+          <div class="pipeline">
+            <article><span>Input</span><strong>Image + instruction</strong><p><code>I + u</code></p></article>
+            <article><span>Perceive</span><strong>Intent-feasibility graph</strong><p>Build belief <code>b_t(f,z)</code>.</p></article>
+            <article><span>Signal</span><strong>Self-knowledge probe <code>g(s)</code></strong><p>Estimate failure risk before committing to an edit.</p></article>
+            <article><span>Decide</span><strong>VOA policy</strong><p>Choose the action with maximum expected value.</p></article>
+          </div>
+          <p>The shared probe is the scientific bridge between G1 and G3: it can trigger abstention when failure cost is high and serve as a risk surrogate when calculating whether asking has value.</p>
+        </section>
+
+        <section id="levels">
+          <h2>Method Levels</h2>
+          <div class="matrix">
+            <div class="row head"><span>Level</span><span>Method</span><span>Role</span><span>Status</span></div>
+            <div class="row"><span>0</span><span>Always-Edit, Always-Abstain, Generic-Ask, Direct-Edit</span><span>Difficulty anchors and trivial policies.</span><span>Required</span></div>
+            <div class="row"><span>1</span><span>EditDecide-Lite</span><span>Graph-SFT plus DPO, single forward pass.</span><span>Required</span></div>
+            <div class="row"><span>2</span><span>VOA Rerank</span><span>Main method: explicit cost-sensitive action selection.</span><span>Required</span></div>
+            <div class="row"><span>3</span><span>Oracle-VOA</span><span>Diagnostic upper bound using true edit outcomes.</span><span>Required</span></div>
+            <div class="row"><span>4</span><span>Should-Edit gates and probe heads</span><span>Single-capability diagnosis for G1 and G2.</span><span>Required</span></div>
+            <div class="row"><span>5</span><span>Cost-Sensitive GRPO</span><span>Potential enhancement if the mainline stabilizes.</span><span>Optional</span></div>
+          </div>
+        </section>
+
+        <section id="editors">
+          <h2>Editor Split</h2>
+          <div class="matrix compact">
+            <div class="row head"><span>Category</span><span>Examples</span><span>G1 black-box</span><span>G2 probe</span></div>
+            <div class="row"><span>Open-weight</span><span>Qwen-Image-Edit, FLUX.1-Kontext-dev, Step1X-Edit, OmniGen2, BAGEL, InstructPix2Pix, MagicBrush, MGIE</span><span>Yes</span><span>Yes, for 4-6 selected editors</span></div>
+            <div class="row"><span>API-only</span><span>GPT-Image-1, Gemini image editing APIs</span><span>Yes</span><span>No hidden states, so no internal probe</span></div>
+            <div class="row"><span>Pending</span><span>Any low-profile or expensive editor</span><span>Only after license and cost checks</span><span>Only if hidden states are accessible</span></div>
+          </div>
+          <p>The paper should state this split explicitly. Black-box editors can be evaluated for behavior, but self-knowledge probes are limited to open models with accessible hidden states.</p>
+        </section>
+
+        <section id="metrics">
+          <h2>Metrics</h2>
+          <div class="cards two">
+            <article><h3>Silent Hallucination Rate</h3><p>Fraction of infeasible requests where the system edits instead of choosing a justified non-edit action. Lower is better.</p></article>
+            <article><h3>Over-Refusal Rate</h3><p>Fraction of feasible twins where the system refuses or flags incorrectly. Lower is better.</p></article>
+            <article><h3>Risk-Coverage AUC</h3><p>Measures selective editing quality as coverage varies. Higher is better when high-risk edits are rejected first.</p></article>
+            <article><h3>Brier Score</h3><p>Proper scoring rule for calibrated failure probability. Primary calibration metric; ECE is secondary.</p></article>
+            <article><h3>Net Utility</h3><p>Cost-sensitive score over edit success, hallucination cost, refusal cost, clarification cost, and mask cost.</p></article>
+            <article><h3>Twin Success</h3><p>Whether the system can satisfy paired feasible or counterfactual examples without exploiting superficial wording.</p></article>
+          </div>
+        </section>
+
+        <section id="experiments">
+          <h2>Must-Win Experiments</h2>
+          <div class="matrix">
+            <div class="row head"><span>Figure/Table</span><span>Question</span><span>Why it matters</span></div>
+            <div class="row"><span>Fig. 3 SHR-ORR Pareto</span><span>Do editors hallucinate on infeasible requests, and what is the over-refusal cost?</span><span>Establishes G1 as a real trade-off.</span></div>
+            <div class="row"><span>Fig. 4 Risk-Coverage</span><span>Can self-knowledge reduce remaining failure risk?</span><span>Establishes G2 and probe value.</span></div>
+            <div class="row"><span>Fig. 5 Joint VOA vs two-stage</span><span>Does unified decision-making beat filter-then-ask?</span><span>Critical evidence for the unified claim.</span></div>
+            <div class="row"><span>Table 1 Main results</span><span>How do methods compare across editors?</span><span>Reports SHR, ORR, risk-coverage, Brier, net utility, twin success.</span></div>
+            <div class="row"><span>Table 2 Ablations</span><span>Which components matter?</span><span>Tests feasible twins, graph, cost terms, shared probe, decoupled probe, Lite, Rerank.</span></div>
+            <div class="row"><span>Fig. 6 Counterfactual twins</span><span>What is the value of clarification?</span><span>Supports the G3 extension through cacheable offline analysis.</span></div>
+          </div>
+        </section>
+
+        <section id="baselines">
+          <h2>Baselines and Comparisons</h2>
+          <ul class="rich-list">
+            <li><strong>Trivial policies:</strong> always edit, always abstain, generic ask, direct edit.</li>
+            <li><strong>Abstention baselines:</strong> text-only refusal classifiers, should-edit gates, SpotEdit-style target checks.</li>
+            <li><strong>Clarification baselines:</strong> proactive clarification, information-gain question selection, fixed threshold asking.</li>
+            <li><strong>Judge baselines:</strong> post-hoc VLM judge, random rejection, oracle risk, and oracle VOA.</li>
+            <li><strong>Ablations:</strong> shared probe vs decoupled probes, graph vs no graph, cost model variants, feasible twin removal.</li>
+          </ul>
+        </section>
+      </article>
+    </main>
+    <footer class="site-footer"><a href="schema.html">Previous: schema</a><a href="execution.html">Next: execution</a></footer>
+    <script src="script.js"></script>
+  </body>
+</html>

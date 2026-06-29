@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Benchmark · EditDecide</title>
+    <meta name="description" content="EditDecide-Bench dataset layers, subsets, and taxonomy." />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="index.html"><span class="brand-mark">ED</span><span><strong>EditDecide</strong><small>Project docs</small></span></a>
+      <button class="menu-button" type="button" aria-label="Toggle navigation" aria-expanded="false"><span></span><span></span><span></span></button>
+      <nav class="site-nav" aria-label="Primary navigation">
+        <a href="index.html">Overview</a><a href="proposal.html">Proposal</a><a class="active" href="benchmark.html">Benchmark</a><a href="schema.html">Schema</a><a href="method.html">Method</a><a href="execution.html">Execution</a>
+      </nav>
+    </header>
+    <main class="doc-layout">
+      <aside class="toc">
+        <a href="#layers">Layers</a><a href="#subsets">Subsets</a><a href="#infeasible">Infeasible Types</a><a href="#ambiguity">Ambiguity Types</a><a href="#twins">Twin Design</a><a href="#human">Human Slice</a>
+      </aside>
+      <article class="doc">
+        <p class="eyebrow">EditDecide-Bench</p>
+        <h1>Dataset and benchmark specification</h1>
+        <p class="lead">EditDecide-Bench is one unified decision dataset, not separate feasibility, calibration, and clarification benchmarks. Its design uses a shared image pool, shared JSON schema, and multiple decision tracks.</p>
+
+        <section id="layers">
+          <h2>Five Dataset Layers</h2>
+          <div class="layer-list">
+            <article><span>Layer 1</span><strong>Raw episode</strong><p>Image plus user instruction.</p></article>
+            <article><span>Layer 2</span><strong>Decision annotation</strong><p>Feasibility, ambiguity, gold action, rationale, acceptable actions.</p></article>
+            <article><span>Layer 3</span><strong>Twin structure</strong><p>Feasible twins and counterfactual intent twins.</p></article>
+            <article><span>Layer 4</span><strong>Editor behavior</strong><p>Outputs, refusal text, generated images, hidden states, probe predictions.</p></article>
+            <article><span>Layer 5</span><strong>Evaluation and reproducibility</strong><p>Judge labels, human labels, metric inputs, cached paths, split IDs.</p></article>
+          </div>
+        </section>
+
+        <section id="subsets">
+          <h2>Subsets</h2>
+          <div class="matrix">
+            <div class="row head"><span>Subset</span><span>Size</span><span>Purpose</span><span>Why it exists</span></div>
+            <div class="row"><span>S1 infeasible</span><span>600 minimum, 1000 full</span><span>G1 feasibility</span><span>Measures silent hallucination when the editor should not execute.</span></div>
+            <div class="row"><span>S1' feasible twin</span><span>600 minimum, 1000 full</span><span>Over-refusal control</span><span>Prevents a refuse-everything system from scoring well.</span></div>
+            <div class="row"><span>S2 self-knowledge</span><span>1000 minimum, 3000 full</span><span>G2 calibration</span><span>Labels whether a specific editor will fail, enabling Brier and risk-coverage.</span></div>
+            <div class="row"><span>S3 ambiguous</span><span>1000 minimum, 2000 full</span><span>G3 extension</span><span>Tests whether the system should ask, confirm, or request a mask.</span></div>
+            <div class="row"><span>S3' counterfactual twin</span><span>200 pairs minimum, 500 full</span><span>Clarification value</span><span>Same image and vague instruction with different hidden intents.</span></div>
+            <div class="row"><span>R human seed</span><span>100 minimum, 150 target</span><span>Ecological validity</span><span>Checks whether real user requests fit the taxonomy.</span></div>
+          </div>
+        </section>
+
+        <section id="infeasible">
+          <h2>Five Infeasibility Types</h2>
+          <div class="cards two">
+            <article><h3><code>false_premise</code></h3><p>The instruction refers to something absent from the image. Example: recolor a red sports car when no car is visible. Expected action: <code>FLAG</code>.</p></article>
+            <article><h3><code>impossible</code></h3><p>The requested information is unrecoverable, such as restoring an occluded face with the same identity. Expected action: <code>ABSTAIN</code>.</p></article>
+            <article><h3><code>contradictory</code></h3><p>The instruction contains mutually incompatible constraints. Expected action: <code>FLAG</code>.</p></article>
+            <article><h3><code>ill_posed</code></h3><p>The instruction needs missing external context, such as brand guidelines. Expected action: <code>ASK</code> or <code>FLAG</code>.</p></article>
+            <article><h3><code>out_of_scope_or_unsafe</code></h3><p>The edit is outside the project scope or safety scope. Expected action: <code>FLAG</code>.</p></article>
+          </div>
+        </section>
+
+        <section id="ambiguity">
+          <h2>Seven Ambiguity Types</h2>
+          <div class="cards two">
+            <article><h3><code>target</code></h3><p>Multiple possible objects. Often requires <code>REQUEST_MASK</code> or <code>ASK</code>.</p></article>
+            <article><h3><code>operation</code></h3><p>The operation is underspecified, such as "fix the background". Usually requires <code>ASK</code>.</p></article>
+            <article><h3><code>region</code></h3><p>The affected region is unclear, such as "make it brighter". May require language or mask input.</p></article>
+            <article><h3><code>degree</code></h3><p>Edit strength is unclear, such as "a little warmer". Often requires <code>CONFIRM</code>.</p></article>
+            <article><h3><code>style</code></h3><p>The style target is underspecified, such as "more cinematic". Usually requires <code>ASK</code>.</p></article>
+            <article><h3><code>preservation</code></h3><p>What must remain unchanged is unclear. Often requires <code>CONFIRM</code>.</p></article>
+            <article><h3><code>interaction</code></h3><p>Language is inefficient and spatial input is better, as in "remove that thing". Expected action: <code>REQUEST_MASK</code>.</p></article>
+          </div>
+        </section>
+
+        <section id="twins">
+          <h2>Twin Design</h2>
+          <h3>Feasible Twins</h3>
+          <p>Each S1 infeasible example is paired with a minimally different feasible example. The pair should flip the gold action from a non-edit action to <code>EDIT</code> while changing as little else as possible.</p>
+          <pre><code>{
+  "s1_infeasible": {
+    "image_id": "img_no_car_001",
+    "instruction": "Change the red sports car to blue.",
+    "gold_action": "FLAG"
+  },
+  "s1_prime_feasible": {
+    "image_id": "img_with_red_car_001",
+    "instruction": "Change the red sports car to blue.",
+    "gold_action": "EDIT"
+  }
+}</code></pre>
+          <h3>Counterfactual Twins</h3>
+          <p>S3' creates a cacheable clarification test. The same image and vague instruction have two or more hidden intents, different edit plans, different success criteria, and cached direct-edit outputs. Blind direct editing should not satisfy both intents, creating a 50% direct-edit ceiling for paired binary cases.</p>
+        </section>
+
+        <section id="human">
+          <h2>Human Seed Slice</h2>
+          <p>The human seed slice addresses the "synthetic data is unrealistic" criticism. It should collect free-form edit requests from 10-15 non-expert users, label feasibility and ambiguity with two independent annotators, report Cohen's kappa, and compare synthetic versus real request distributions using category and length statistics.</p>
+        </section>
+      </article>
+    </main>
+    <footer class="site-footer"><a href="proposal.html">Previous: proposal</a><a href="schema.html">Next: schema</a></footer>
+    <script src="script.js"></script>
+  </body>
+</html>
